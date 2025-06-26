@@ -12,7 +12,7 @@ import LoginButton from "./LoginButton";
 
 const MobileNavbar = () => {
   return (
-    <section className="flex lg:hidden ">
+    <section className="flex md:hidden ">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant={"ghost"} size={"icon"}>
@@ -20,9 +20,9 @@ const MobileNavbar = () => {
           </Button>
         </SheetTrigger>
 
-        <SheetContent>
+        <SheetContent className="z-[110] fixed">
           <SheetHeader>
-            <SheetTitle className="mt-12">Menu</SheetTitle>
+            <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
 
           <section className="block lg:hidden gap-2 w-full mt-6">

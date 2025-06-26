@@ -36,3 +36,18 @@ export interface ProductDetailsType {
   quantity: number;
   description: string;
 }
+
+export interface ReviewType {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+  user: {
+    name: string;
+  };
+}
+
+export interface AverageRatingType {
+  count: number;
+  averageRating: number | null;
+}

@@ -1,8 +1,14 @@
 import { create } from "zustand";
-import { HomeProductType, ProductDetailsType } from "@/types/product.types";
+import {
+  AverageRatingType,
+  HomeProductType,
+  ProductDetailsType,
+  ReviewType,
+} from "@/types/product.types";
 import {
   getFilteredProduct,
   getProductDetails,
+  getProductReviews,
 } from "@/actions/product.action";
 import { ProductCategory } from "@/generated/prisma";
 
@@ -16,12 +22,19 @@ interface ProductStore {
   individualProduct: ProductDetailsType | null;
   loadingIndividualProduct: boolean;
 
+  reviews: ReviewType[];
+  averageRating: AverageRatingType | null;
+  loadingReview: boolean;
+
   setFilterSearch: (val: string) => void;
   setFilterCategory: (val: string) => void;
   setFilterPrice: (val: string) => void;
 
   fetchProducts: () => void;
   fetchIndividualProduct: (productId: string) => void;
+
+  fetchReview: (productId: string) => void;
+  resetReview: () => void;
 }
 
 const useProductStore = create<ProductStore>((set, get) => ({
@@ -34,9 +47,13 @@ const useProductStore = create<ProductStore>((set, get) => ({
   individualProduct: null,
   loadingIndividualProduct: true,
 
+  reviews: [],
+  averageRating: null,
+
+  loadingReview: true,
+
   setFilterSearch: (val) => {
     set({ filterSearch: val });
-    get().fetchProducts();
   },
 
   setFilterCategory: (val) => {
@@ -80,6 +97,23 @@ const useProductStore = create<ProductStore>((set, get) => ({
     } finally {
       set({ loadingIndividualProduct: false });
     }
+  },
+
+  fetchReview: async (productId) => {
+    set({ loadingReview: true });
+    const res = await getProductReviews(productId);
+
+    console.log(res);
+
+    if (res.success) {
+      set({ reviews: res.reviews, averageRating: res.aggregate });
+    }
+
+    set({ loadingReview: false });
+  },
+
+  resetReview: async () => {
+    set({ reviews: [] });
   },
 }));
 

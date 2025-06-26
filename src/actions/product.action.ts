@@ -57,6 +57,9 @@ export async function getFilteredProduct(
   try {
     const products: HomeProductType[] = await prisma.product.findMany({
       where: {
+        quantity: {
+          gt: 0,
+        },
         name: search
           ? {
               contains: search,
@@ -69,8 +72,9 @@ export async function getFilteredProduct(
         ? {
             price: priceSort,
           }
-        : undefined,
-
+        : {
+            createdAt: "desc",
+          },
       select: {
         id: true,
         name: true,
@@ -96,5 +100,47 @@ export async function getProductDetails(productId: string) {
   } catch (error) {
     console.log("Error in getFilteredProduct: ", error);
     throw new Error("Failed to fetch filtered products");
+  }
+}
+
+export async function getProductReviews(productId: string) {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { productId },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const aggregate = await prisma.review.aggregate({
+      where: { productId },
+      _count: true,
+      _avg: {
+        rating: true,
+      },
+    });
+
+    return {
+      success: true,
+      reviews,
+      aggregate: {
+        count: aggregate._count,
+        averageRating: aggregate._avg.rating,
+      },
+    };
+  } catch (error) {
+    console.log("Failed to get reviews: ", error);
+    return { success: false, error: "Failed to fetch reviews" };
   }
 }

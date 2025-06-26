@@ -3,10 +3,19 @@
 import useProductStore from "@/app/store/useProductStore";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useEffect } from "react";
 
 const SearchBar = () => {
   const filterSearch = useProductStore((state) => state.filterSearch);
   const setFilterSearch = useProductStore((state) => state.setFilterSearch);
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
+
+  const debouncedSearch = useDebounce(filterSearch, 500);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [debouncedSearch, fetchProducts]);
 
   return (
     <div className="relative flex w-max">

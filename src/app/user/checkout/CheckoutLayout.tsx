@@ -2,14 +2,25 @@
 
 import { useCartStore } from "@/app/store/useCartStore";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import esewa from "@/images/esewa.png";
 import khalti from "@/images/khalti.png";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
+import { placeOrder } from "@/actions/user.action";
+import { Spinner } from "@/components/ui/spinner";
+import { useRouter } from "next/navigation";
+
+interface FormData {
+  location: string;
+  phone: string;
+}
 
 const CheckoutLayout = () => {
-  const { cartItems, getCartItems, resetCartData } = useCartStore();
+  const router = useRouter();
+  const { cartItems, getCartItems, resetCartData, loadingCartItems } =
+    useCartStore();
 
   const [subTotal, setSubTotal] = useState<number>(0);
   useEffect(() => {
@@ -27,6 +38,38 @@ const CheckoutLayout = () => {
       resetCartData();
     };
   }, [getCartItems, resetCartData]);
+
+  const [formData, setFormData] = useState<FormData>({
+    location: "",
+    phone: "",
+  });
+
+  const checkoutHandle = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const res = await placeOrder(formData);
+
+      if (res?.success) {
+        toast.success(res?.message || "Successfully Placed Your Order");
+        setFormData({ location: "", phone: "" });
+        router.push("/");
+        useCartStore.getState().getCartCount();
+      } else {
+        toast.error(res?.error || "Something went wrong");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+      console.log(error);
+    }
+  };
+
+  if (loadingCartItems) {
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center">
@@ -58,12 +101,16 @@ const CheckoutLayout = () => {
             <section>
               <h1 className="text-xl font-bold mb-2">Enter your details</h1>
 
-              <form action="" className="flex flex-col gap-4">
+              <form onSubmit={checkoutHandle} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
                   <label htmlFor="location">Location</label>
                   <Input
                     type="text"
                     name="location"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     placeholder="Enter your location"
                     className="w-[20rem]"
                     required
@@ -78,6 +125,10 @@ const CheckoutLayout = () => {
                     placeholder="Enter your phone number"
                     minLength={10}
                     maxLength={10}
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
                     required
                     className="w-[20rem]"
                   />
@@ -97,7 +148,7 @@ const CheckoutLayout = () => {
                 </div>
 
                 <div>
-                  <hr />
+                  <hr className="my-2" />
                   <div className="flex justify-between font-bold">
                     <span>Total Amount</span>
                     <span>Rs. {subTotal}</span>

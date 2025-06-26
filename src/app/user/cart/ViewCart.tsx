@@ -8,11 +8,13 @@ import IndividualCartItem from "./IndividualCartItem";
 import useAuthStore from "@/app/store/useAuthStore";
 import PriceCalculation from "./PriceCalculation";
 import { ShoppingBasket } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 const ViewCart = () => {
   const router = useRouter();
 
-  const { cartItems, getCartItems, resetCartData } = useCartStore();
+  const { cartItems, getCartItems, resetCartData, loadingCartItems } =
+    useCartStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -31,10 +33,18 @@ const ViewCart = () => {
     };
   }, [getCartItems, resetCartData]);
 
+  if (loadingCartItems) {
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col items-center">
       {cartItems.length === 0 ? (
-        <div className="bg-white/50 backdrop-blur-md p-5 flex items-center gap-4 rounded-md">
+        <div className="bg-gray-600/50 backdrop-blur-3xl p-5 flex items-center gap-4 rounded-md">
           <ShoppingBasket size={40} />
           <span className="text-2xl">Your Cart is Empty</span>
         </div>

@@ -82,8 +82,8 @@ export const useCartStore = create<CartStore>((set) => ({
 
   getCartItems: async () => {
     try {
+      set({ loadingCartItems: true });
       const res = await viewCartItems();
-      console.log(res);
 
       if (res.success) {
         set({ cartItems: res.cartItems });
@@ -92,6 +92,8 @@ export const useCartStore = create<CartStore>((set) => ({
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      set({ loadingCartItems: false });
     }
   },
 

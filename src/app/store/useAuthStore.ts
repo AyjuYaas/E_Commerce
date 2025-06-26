@@ -11,6 +11,7 @@ interface User {
 
 interface UserStore {
   user: User | null;
+  loadingUserCheck: boolean;
 
   userLogin: (user: { email: string; password: string }) => Promise<boolean>;
 
@@ -21,6 +22,7 @@ interface UserStore {
 
 const useAuthStore = create<UserStore>((set) => ({
   user: null,
+  loadingUserCheck: true,
 
   userLogin: async (user) => {
     try {
@@ -39,11 +41,14 @@ const useAuthStore = create<UserStore>((set) => ({
 
   userCheck: async () => {
     try {
+      set({ loadingUserCheck: true });
       const res = await checkAuth();
       set({ user: res.user });
     } catch (error) {
       console.log(error);
       set({ user: null });
+    } finally {
+      set({ loadingUserCheck: false });
     }
   },
 

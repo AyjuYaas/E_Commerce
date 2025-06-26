@@ -10,12 +10,16 @@ import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
   const router = useRouter();
+
   const [formData, setFormData] = useState<LoginFormType>({
     email: "",
     password: "",
   });
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const { userLogin } = useAuthStore();
+
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(() => ({ ...formData, [e.target.name]: e.target.value }));
   };

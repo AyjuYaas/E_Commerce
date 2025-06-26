@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import ReviewSection from "./ReviewSection";
 
 const ProductDetails = ({ params }: { params: { productid: string } }) => {
   const {
@@ -55,7 +56,7 @@ const ProductDetails = ({ params }: { params: { productid: string } }) => {
             <img
               src={individualProduct.image}
               alt={individualProduct.name}
-              className="size-[15rem] md:size-[25rem] rounded-lg"
+              className="size-[10rem] md:size-[15rem] rounded-lg"
             />
             <div className="flex flex-col gap-2">
               <p className="text-2xl">{individualProduct.description}</p>
@@ -127,6 +128,10 @@ const ProductDetails = ({ params }: { params: { productid: string } }) => {
               )}
             </div>
           </div>
+
+          <section>
+            <ReviewSection productId={individualProduct.id} />
+          </section>
         </div>
       )}
     </div>
