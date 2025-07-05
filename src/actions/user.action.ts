@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 interface PlaceOrderProps {
   location: string;
   phone: string;
+  data: string;
 }
 
 interface PostReviewProps {
@@ -14,7 +15,7 @@ interface PostReviewProps {
   productId: string;
 }
 
-export async function placeOrder({ location, phone }: PlaceOrderProps) {
+export async function placeOrder({ location, phone, data }: PlaceOrderProps) {
   try {
     const session = await getSession();
 
@@ -32,6 +33,20 @@ export async function placeOrder({ location, phone }: PlaceOrderProps) {
 
     if (!location || !phone) {
       return { success: false, error: "All fields are required" };
+    }
+
+    // Decode and parse eSewa data
+    let esewa_obj;
+    try {
+      const decoded = atob(data);
+      esewa_obj = JSON.parse(decoded);
+    } catch (error) {
+      console.log(error);
+      return { success: false, error: "Invalid eSewa data" };
+    }
+
+    if (esewa_obj.status !== "COMPLETE") {
+      return { success: false, error: "Payment incomplete" };
     }
 
     const cartItems = await prisma.cart.findMany({
@@ -53,12 +68,6 @@ export async function placeOrder({ location, phone }: PlaceOrderProps) {
       }
     }
 
-    const totalItemAmount = cartItems.reduce((acc, item) => {
-      return acc + item.quantity * item.product.price;
-    }, 0);
-
-    const totalAmount = totalItemAmount + 100 + totalItemAmount * 0.08;
-
     // Step 2: Transactional Order + OrderItems + Payment + Decrease Stock + Clear Cart
     const order = await prisma.$transaction(async (tx) => {
       // Create order
@@ -67,7 +76,7 @@ export async function placeOrder({ location, phone }: PlaceOrderProps) {
           userId: user.id,
           location,
           phone,
-          totalAmount,
+          totalAmount: Number(esewa_obj.total_amount),
           status: "DELIVERED",
         },
       });
@@ -97,8 +106,8 @@ export async function placeOrder({ location, phone }: PlaceOrderProps) {
       await tx.payment.create({
         data: {
           orderId: createdOrder.id,
-          amount: totalAmount,
-          status: "PENDING",
+          amount: Number(esewa_obj.total_amount),
+          status: "PAID",
         },
       });
 
@@ -107,7 +116,7 @@ export async function placeOrder({ location, phone }: PlaceOrderProps) {
         where: { userId: user.id },
       });
 
-      return createdOrder;
+      return { success: true, createdOrder };
     });
 
     return { success: true, message: "Order placed successfully", order };

@@ -56,7 +56,7 @@ const ProductDetails = ({ params }: { params: { productid: string } }) => {
             <img
               src={individualProduct.image}
               alt={individualProduct.name}
-              className="size-[10rem] md:size-[15rem] rounded-lg"
+              className="size-[10rem] md:size-[15rem] rounded-lg border-2"
             />
             <div className="flex flex-col gap-2">
               <p className="text-2xl">{individualProduct.description}</p>

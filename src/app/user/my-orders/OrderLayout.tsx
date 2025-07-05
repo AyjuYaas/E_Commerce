@@ -47,7 +47,7 @@ const OrderLayout = () => {
                 <span>Ordered At: {order.createdAt.toDateString()}</span>
               </section>
 
-              <section className="flex flex-wrap mt-5 gap-2">
+              <section className="flex flex-wrap mt-5 gap-2 max-w-[30rem]">
                 {order.items.map((item) => (
                   <div
                     key={item.id}

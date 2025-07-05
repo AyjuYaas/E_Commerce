@@ -1,7 +1,13 @@
-import { getUserReview, postReview, viewOrder } from "@/actions/user.action";
+import {
+  getUserReview,
+  placeOrder,
+  postReview,
+  viewOrder,
+} from "@/actions/user.action";
 import { UserOrderTypes } from "@/types/order.types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
+import { useCartStore } from "./useCartStore";
 
 interface OrderStore {
   orders: UserOrderTypes[];
@@ -25,6 +31,8 @@ interface OrderStore {
     review: string,
     productId: string
   ) => Promise<boolean>;
+
+  placeUserOrder: (data: string) => Promise<boolean>;
 }
 
 export const useOrderStore = create<OrderStore>((set) => ({
@@ -77,5 +85,23 @@ export const useOrderStore = create<OrderStore>((set) => ({
       set({ loadingPostReview: false });
       return false;
     }
+  },
+
+  placeUserOrder: async (data) => {
+    const location = localStorage.getItem("checkout_location") || "";
+    const phone = localStorage.getItem("checkout_phone") || "";
+
+    const res = await placeOrder({ location, phone, data });
+
+    if (res.success) {
+      toast.success("Successfully placed your order ");
+      localStorage.removeItem("checkout_location");
+      localStorage.removeItem("checkout_phone");
+
+      useCartStore.getState().getCartCount();
+      return true;
+    }
+
+    return false;
   },
 }));

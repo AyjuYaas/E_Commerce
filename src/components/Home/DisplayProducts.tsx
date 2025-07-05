@@ -19,7 +19,7 @@ const DisplayProducts = () => {
   }, [fetchProducts]);
 
   return (
-    <div className="flex gap-4 flex-wrap justify-center items-center md:justify-start">
+    <div className="flex gap-4 flex-wrap justify-start items-start">
       {loading ? (
         Array.from({ length: 6 }).map((_, index) => (
           <div key={index} className="flex flex-col items-center">

@@ -4,13 +4,13 @@ import { useCartStore } from "@/app/store/useCartStore";
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
 import esewa from "@/images/esewa.png";
-import khalti from "@/images/khalti.png";
+// import khalti from "@/images/khalti.png";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
-import { placeOrder } from "@/actions/user.action";
 import { Spinner } from "@/components/ui/spinner";
-import { useRouter } from "next/navigation";
+import useAuthStore from "@/app/store/useAuthStore";
+import axios from "axios";
 
 interface FormData {
   location: string;
@@ -18,7 +18,6 @@ interface FormData {
 }
 
 const CheckoutLayout = () => {
-  const router = useRouter();
   const { cartItems, getCartItems, resetCartData, loadingCartItems } =
     useCartStore();
 
@@ -28,7 +27,7 @@ const CheckoutLayout = () => {
       return total + item.quantity * item.product.price;
     }, 0);
 
-    setSubTotal(subtotal + 100 + subtotal * (8 / 100));
+    setSubTotal(subtotal + subtotal * (8 / 100));
   }, [cartItems]);
 
   useEffect(() => {
@@ -44,22 +43,70 @@ const CheckoutLayout = () => {
     phone: "",
   });
 
-  const checkoutHandle = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const res = await placeOrder(formData);
+  const { user } = useAuthStore();
 
-      if (res?.success) {
-        toast.success(res?.message || "Successfully Placed Your Order");
-        setFormData({ location: "", phone: "" });
-        router.push("/");
-        useCartStore.getState().getCartCount();
-      } else {
-        toast.error(res?.error || "Something went wrong");
-      }
-    } catch (error) {
-      toast.error("Something went wrong");
-      console.log(error);
+  const checkoutHandle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.location || !formData.phone) {
+      toast.error("Please fill in your location and phone");
+      return;
+    }
+
+    if (!user) {
+      toast.error("You must be logged in to proceed");
+      return;
+    }
+
+    try {
+      toast.loading("Redirecting to esewa");
+
+      localStorage.setItem("checkout_location", formData.location);
+      localStorage.setItem("checkout_phone", formData.phone);
+
+      const res = await axios.post("/api/payment/initiate", {
+        amount: subTotal,
+        name: user?.name,
+        email: user?.email,
+      });
+
+      const { paymentUrl, params } = res.data;
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = paymentUrl;
+      form.style.display = "none";
+
+      const addField = (name: string, value: string) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      };
+
+      addField("amount", params.amount);
+      addField("tax_amount", params.tax_amount);
+      addField("total_amount", params.total_amount);
+      addField("transaction_uuid", params.transaction_uuid);
+      addField("product_code", params.product_code);
+      addField("product_service_charge", params.product_service_charge);
+      addField("product_delivery_charge", params.product_delivery_charge);
+      addField("signed_field_names", params.signed_field_names);
+      addField("signature", params.signature);
+      addField("success_url", params.success_url);
+      addField("failure_url", params.failure_url);
+
+      document.body.appendChild(form);
+      form.submit();
+
+      toast.dismiss(); // Remove loading toast
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast.dismiss();
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to initiate payment. Please try again."
+      );
     }
   };
 
@@ -73,7 +120,7 @@ const CheckoutLayout = () => {
 
   return (
     <div className="flex justify-center items-center">
-      <div className="flex flex-col gap-5 border-2 p-5 rounded-sm">
+      <div className="flex flex-col gap-5 border-2 p-5 rounded-sm max-w-[30rem]">
         <section className="flex flex-col text-2xl font-bold">
           <span>Proceed to</span>
           <span className="font-light">Checkout</span>
@@ -136,15 +183,14 @@ const CheckoutLayout = () => {
 
                 <div className="flex flex-col gap-1">
                   <h1>Choose a Payment Method</h1>
-                  <section className="flex gap-5">
-                    <Button variant={"ghost"} className="h-20" type="button">
-                      <Image src={esewa} alt="esewa" width={50} height={50} />
-                    </Button>
 
-                    <Button variant={"ghost"} className="h-20" type="button">
-                      <Image src={khalti} alt="khalti" width={50} height={50} />
-                    </Button>
-                  </section>
+                  <Button
+                    variant={"ghost"}
+                    className="h-20 w-max"
+                    type="button"
+                  >
+                    <Image src={esewa} alt="esewa" width={50} height={50} />
+                  </Button>
                 </div>
 
                 <div>
