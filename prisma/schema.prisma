@@ -109,6 +109,7 @@ model OrderItem {
 
 model Payment {
   id String @id @default(cuid())
+  transactionId String
   orderId String @unique
   amount Float
   status PaymentStatus @default(PENDING)
@@ -116,6 +117,14 @@ model Payment {
 
   // Relations
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model admin {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
 }
 
 enum OrderStatus {

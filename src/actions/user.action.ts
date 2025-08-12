@@ -106,6 +106,7 @@ export async function placeOrder({ location, phone, data }: PlaceOrderProps) {
       await tx.payment.create({
         data: {
           orderId: createdOrder.id,
+          transactionId: esewa_obj.transaction_code,
           amount: Number(esewa_obj.total_amount),
           status: "PAID",
         },

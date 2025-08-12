@@ -31,6 +31,8 @@ const useAuthStore = create<UserStore>((set) => ({
         toast.success("Login Successful");
         set({ user: res.user });
         return true;
+      } else {
+        toast.error(res.error || "Something went wrong");
       }
     } catch (error: any) {
       console.log(error);

@@ -44,9 +44,9 @@ const DisplayProducts = () => {
             <img
               src={product.image}
               alt={product.name}
-              className="size-[11rem] object-cover rounded-md bg-white"
+              className="h-[14rem] w-[14rem] object-full rounded-md bg-white"
             />
-            <article className="text-2xl mt-5 text-[#334a52] font-bold text-center grid grid-rows-4 gap-2 h-full">
+            <article className="text-2xl mt-3 text-[#334a52] font-bold text-center grid grid-rows-4 gap-1 h-full">
               <p className="tracking-wider row-span-2 line-clamp-2 overflow-hidden text-ellipsis">
                 {product.name}
               </p>

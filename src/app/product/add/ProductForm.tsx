@@ -44,6 +44,14 @@ const ProductForm = () => {
       const res = await addProduct(formData);
       if (res.success) {
         toast.success("Successfully Added the Product");
+        setFormData({
+          name: "",
+          category: undefined,
+          price: 1,
+          quantity: 1,
+          description: "",
+          image: "",
+        });
       } else {
         toast.error(res.error || "Something went wrong");
       }

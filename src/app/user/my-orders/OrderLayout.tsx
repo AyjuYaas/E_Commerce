@@ -60,7 +60,7 @@ const OrderLayout = () => {
                       <img
                         src={item.product.image}
                         alt={item.product.name}
-                        className="size-[8rem]"
+                        className="h-[8rem] w-[8rem] object-fill"
                       />
                       <section className="flex flex-col">
                         <span className="font-bold tracking-widest">
